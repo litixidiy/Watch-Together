@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<script src="{{ url_for('static', filename='jquery-3.6.0.js') }}"></script>
+<script  src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.2.0/socket.io.js" integrity="sha512-WL6WGKMPBiM9PnHRYIn5YEtq0Z8XP4fkVb4qy7PP4vhmYQErJ/dySyXuFIMDf1eEYCXCrQrMJfkNwKc9gsjTjA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
+<h1>{% block title %} Room {% endblock %}</h1>
+<h2>{{room_obj.vid_id}}</h2>
+
+<iframe id="player" width="640" height="360" src="https://www.youtube.com/embed/{{room_obj.vid_id}}?autoplay=1&mute=0&enablejsapi=1"
+    frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+    style="border: solid 4px #37474F"
+    allowfullscreen></iframe>
+
+{%if is_admin  %}
+    <form method="post">
+        <label for="username">User To Add</label>
+        <input name="username" id="username"  required>        
+        <input type="submit" value="Save">
+    </form>
+{%endif%}
+
+{%if !is_admin  %}
+    <h3>Play to Sync</h3>
+{%endif%}
+
+
+<script type="text/javascript">
+    var socket;   
+    var is_admin = ("{{is_admin}}"==="1");
+    var room_id = "{{room_obj._id}}";
+    var ready = false;
+    
+    var tag = document.createElement('script');
+    tag.id = 'iframe-demo';
+    tag.src = 'https://www.youtube.com/iframe_api';
+
+    var script = document.getElementsByTagName('script')[0];
+    script.parentNode.insertBefore(tag, script);
+
+    var player;
+
+    function onYouTubeIframeAPIReady() {
+        player = new YT.Player('player', {
+            events: {
+                'onReady': onPlayerReady,
+                'onStateChange': onPlayerStateChange
+            }
+        });
+    }
+    function onPlayerReady(){
+        ready=true;
+        console.log('[Player] Ready')
+        socket = io.connect('http://127.0.0.1:5000/vroom');
+        socket.on('connect',(msg)=>{
+            console.log('[Connected to SocketIO]')
+            socket.emit('join',{room_id:room_id});
+
+            if(is_admin){
+
+                const emit_state_interval = setInterval(emit_state,1000);
+                console.log('[State Interval Started]');
+            }else{
+
+                //load the last updated time sent by the admin
+                socket.emit('get_most_recent_state', {room_id:room_id},(res)=>{
+                    console.log("match state from most recent");
+                    matchStatus(res);
+                });
+            };
+
+        });
+
+        socket.on('set_time',(msg)=>{
+            console.log('Setting Time : '+msg.time);
+            player.seekTo( parseFloat(msg.time),false);
+        });
+
+        //video state for the room admin
+        socket.on('state',(msg)=>{
+            if(!is_admin)matchStatus(msg);
+        });
+
+        //status of user in a room
+        socket.on('status',(msg)=>{
+            console.log(msg['msg']);
+        });
+    }
+
+    function onPlayerStateChange(){
+        
+    }
+    
+    function matchStatus(msg){
+        var cur_time = player.getCurrentTime();
+        var admin_time = parseFloat(msg.time);
+
+        var cur_state = player.getPlayerState();
+        console.log(msg);
+
+        if(msg.state===2){
+            player.pauseVideo();
+            console.log('[Player] Paused')
+        }
+        else if(msg.state===1){
+            player.playVideo();
+            console.log('[Player] Play')
+
+        };
+
+        if(Math.abs(cur_time-admin_time)>=0.2){
+            player.seekTo(admin_time);
+            console.log('[Player] seekTo : '+admin_time);
+        }
+    }
+
+    var emit_state = ()=>{
+        var cur_time = player.getCurrentTime();
+        var cur_state = player.getPlayerState();
+        socket.emit('state',{room_id:room_id,time:cur_time,state:cur_state});
+    }
+
+
+    //remove the user from the room on the server-side when the user leaves the room
+    window.onbeforeunload = function () {
+        socket.emit('left', {
+            room_id: "room_id"
+        })
+    };
+ 
+
+
+</script>
+  
+{% endblock %}
