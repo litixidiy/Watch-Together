@@ -6,7 +6,7 @@ from flaskr.configmodule import DB_SERVER
 from flaskr.user import User
 
 #connecting to the datebase and getting each of the collections
-client = MongoClient(DB_SERVER)
+client = MongoClient(DB_SERVER,connect=False)
 
 db = client["YouTubeWaterDB"]
 users = db.get_collection("users")
