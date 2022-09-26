@@ -1,12 +1,11 @@
 {% extends 'base.html' %}
 {% block header %}
-<h3>{% block title %}Your Rooms{% endblock %}</h1>
+<h3 class="title">{% block title %}Your Rooms{% endblock %}</h1>
     {% endblock %}
     {% block content %}
 
     <!-- main content of list of video-->
     <div class="container">
-
         <div class="list-container">
             {% for room in rooms %}
             <div class="vid-list">
