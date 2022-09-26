@@ -1,4 +1,3 @@
-from distutils.log import debug
 from flaskr import create_app
 
 app = create_app()

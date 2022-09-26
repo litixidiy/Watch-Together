@@ -1,12 +1,27 @@
 {% extends 'base.html' %}
+{% block header %}
+<h3>{% block title %}Your Rooms{% endblock %}</h1>
+    {% endblock %}
+    {% block content %}
 
-{% block content %}
-<h1>{% block title %} Home Page {% endblock %}</h1>
-<h3>List of Rooms You are in :</h2>
-<ul>
-    {% for room in rooms %}
-        <li><a href="/vroom/{{room._id.room_id}}">{{room.vid_id}}</a></li>
-    {% endfor %}
-</ul>
+    <!-- main content of list of video-->
+    <div class="container">
 
-{% endblock %}
+        <div class="list-container">
+            {% for room in rooms %}
+            <div class="vid-list">
+
+                <!-- https://i.ytimg.com/vi/{{room._id.vid_id}}/hq720.jpg-->
+               <a href="/vroom/{{room._id.room_id}}"><img  class ="thumbnail" src="https://i.ytimg.com/vi/{{room.vid_id}}/hq720.jpg"></a> 
+
+                <div class="vid-info"> 
+                    <a href="/vroom/{{room._id.room_id}}">{{room.vid_id}} </a>
+                </div>
+            </div>
+            {% endfor %}
+
+        </div>
+    </div>
+
+
+    {% endblock %}
