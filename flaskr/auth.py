@@ -1,6 +1,6 @@
 
-from flask import(Blueprint, flash, g, redirect,
-                  render_template, request, session, url_for)
+from flask import (Blueprint, flash, g, redirect,
+                   render_template, request, session, url_for)
 import flask_login
 from pymongo.errors import DuplicateKeyError
 
@@ -14,20 +14,26 @@ bp = Blueprint('auth', __name__, url_prefix='/auth')
     If the request method is GET, then return the register html
     :return: a redirect to the login page.
 """
+
+
 @bp.route('/register', methods=('GET', 'POST'))
 def register():
     if request.method == 'POST':
+        email = request.form['email']
         username = request.form['username']
         password = request.form['password']
+
         error = None
-        if not username:
+        if not email:
+            error = 'Email is required'
+        elif not username:
             error = 'Username is required.'
         elif not password:
             error = 'Password is required.'
 
         if error is None:
             try:
-                save_user(username, password)
+                save_user(email, username, password)
             except DuplicateKeyError:
                 error = f"User {username} is already registered."
             #redirect to login when no errors
@@ -35,8 +41,9 @@ def register():
                 return redirect(url_for("auth.login"))
 
         flash(error)
-    print('registered')
+
     return render_template('auth/register.html')
+
 
 @bp.route('/login', methods=('GET', 'POST'))
 def login():
@@ -51,9 +58,10 @@ def login():
         elif not user.check_pw(password):
             error = 'Incorrect password.'
         if error is None:
-            loggedIn =  flask_login.login_user(user,remember=True)
+            loggedIn = flask_login.login_user(user, remember=True)
             if loggedIn:
-                print("[User Msg] : "+flask_login.current_user.username +" Logged In")
+                print("[User Msg] : " +
+                      flask_login.current_user.username + " Logged In")
                 return redirect(url_for('index'))
             else:
                 print("[User Msg] : LogIn Failed")

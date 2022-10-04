@@ -31,11 +31,17 @@ def index():
     :return: The index.html template is being returned.
     """
 
-    rooms =[]
     if flask_login.current_user.is_authenticated:
+         return redirect(url_for("vroom.vrooms"))
+
+    return render_template('vroom/home.html')
+
+
+@bp.route('/vrooms')
+@flask_login.login_required
+def vrooms():
         rooms = get_room_of_user(flask_login.current_user.username)
-    
-    return render_template('vroom/index.html',rooms = rooms)
+        return render_template('vroom/vrooms.html',rooms = rooms)
 
 
 @bp.route('/create', methods=('GET', 'POST'))
@@ -62,7 +68,6 @@ def create():
             room_id = save_room(vid_id,flask_login.current_user.username)
             return redirect(url_for("vroom.view_vroom",room_id=room_id))
     return render_template('vroom/create.html')
-
 
 @bp.route('/vroom/<room_id>/', methods=('GET', 'POST'))
 @flask_login.login_required

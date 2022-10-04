@@ -67,7 +67,7 @@ hr {
     color:#cae6f6;
 }
 
-/*main content*/
+/*main content of rooms*/
 
 .container {
     display: flex;
@@ -173,8 +173,16 @@ input[type=submit] {
     min-width: 10em;
 }
 
-/*login form */
+/*main doby */
+.main-doby-content{
+    display: flex;
+    justify-content: center;
+    padding-top: 30px;
+    padding-bottom: 30px;
+}
 
+
+/*login form */
 .login-box {
     position: absolute;
     top: 50%;

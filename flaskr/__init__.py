@@ -1,8 +1,7 @@
 from flask import Flask
-from flask_socketio import SocketIO,disconnect
+from flask_socketio import SocketIO
 import flask_login
-from flaskr.db import get_user, save_user
-from flaskr.configmodule import DevelopmentConfig
+from flaskr.db import get_user
 
 socketio = SocketIO()
 

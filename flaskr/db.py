@@ -9,10 +9,10 @@ from flaskr.user import User
 client = MongoClient(DB_SERVER,connect=False)
 
 db = client["YouTubeWaterDB"]
-users = db.get_collection("users")
-rooms = db.get_collection("rooms")
-room_members = db.get_collection("room_members")
-states = db.get_collection("states")
+users = db["users"]
+rooms = db["rooms"]
+room_members = db["room_members"]
+states = db["states"]
 
 def get_user(username):
     """
@@ -22,9 +22,9 @@ def get_user(username):
     :return: A User object
     """
     user = users.find_one({"_id":username})
-    return User(user["_id"],user["password"]) if user else None
+    return User(user["email"],user["_id"],user["password"]) if user else None
 
-def save_user(username, pw):
+def save_user(email, username, pw):
     """
     It takes a username and password, hashes the password, and then inserts a document into the users
     collection with the username as the _id and the hashed password as the password
@@ -33,7 +33,8 @@ def save_user(username, pw):
     :param pw: the password you want to save
     """
     pw_hash = generate_password_hash(pw)
-    users.insert_one({'_id':username,'password':pw_hash})
+    
+    users.insert_one({'_id':username,'email':email,'password':pw_hash})
 
 def add_room_member(room_id,vid_id,username,is_admin=False):
     """
